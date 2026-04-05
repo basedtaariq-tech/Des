@@ -43,7 +43,7 @@ class Settings(BaseModel):
 
     @property
     def BOOK_ADS_URL(self) -> str:
-        return f"https://t.me/{self.BOT_USERNAME}?start=ads"
+        return "https://t.me/PumpToolzBuyBot?start=ads"
 
 
 settings = Settings()
