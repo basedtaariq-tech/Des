@@ -129,15 +129,32 @@ def build_buy_message_channel(**kwargs) -> str:
 
 def build_leaderboard_message(rows: list[tuple[int, str, str, float, str | None]], footer_handle: str) -> str:
     lines = ["🟢 PUMPTOOLS TRENDING", ""]
-    for idx, row in enumerate(rows[:10], start=1):
+
+    visible_rows = []
+    for row in rows[:10]:
+        rank, label, metric, pct, chart_url = row
+        clean_label = (label or "").strip()
+        clean_metric = (metric or "").strip()
+
+        is_empty_label = clean_label.upper() in {"", "TOKEN"}
+        is_empty_metric = clean_metric in {"", "0", "0.0", "0%"}
+        is_empty_pct = abs(float(pct or 0.0)) < 0.000001
+
+        if is_empty_label and is_empty_metric and is_empty_pct:
+            continue
+        visible_rows.append(row)
+
+    for idx, row in enumerate(visible_rows, start=1):
         rank, label, metric, pct, chart_url = row
         sign = "+" if pct > 0 else ""
-        clean_label = (label or 'TOKEN').strip()[:32]
+        clean_label = (label or "TOKEN").strip()[:32]
         token_part = _a(clean_label, chart_url or settings.LISTING_URL)
         metric_part = _a(metric, chart_url or settings.LISTING_URL)
         lines.append(f'{RANK_EMOJIS.get(rank, str(rank))} {token_part} | {metric_part} | {sign}{pct:.0f}%')
-        if idx == 3:
+        if idx == 3 and len(visible_rows) > 3:
             lines.append("────────────────────")
-    lines.append("")
-    lines.append(f"<blockquote>💬 To trend add {footer_handle} in your group</blockquote>")
+
+    if len(visible_rows) == 0:
+        lines.append("No trending tokens yet")
+
     return "\n".join(lines)
