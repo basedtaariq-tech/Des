@@ -418,13 +418,13 @@ class BuyWatcher:
             if row2 and row2[0]:
                 tg_url = row2[0]
             if row3:
-                token_cfg = {"buy_step": row3[0] or 1, "min_buy": float(row3[1] or 0.0), "emoji": row3[2] or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>', "media_file_id": row3[3], "media_kind": row3[4] or "photo"}
+                token_cfg = {"buy_step": row3[0] or 1, "min_buy": float(row3[1] or 0.0), "emoji": row3[2] or "🟢", "media_file_id": row3[3], "media_kind": row3[4] or "photo"}
         except Exception:
             pass
         # group message uses group settings emoji and tg link (if set)
         _ = build_buy_message_group(
             token_symbol=token_name,
-            emoji=token_cfg.get("emoji") or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>',
+            emoji="🟢",
             spent_sol=effective_spent_sol,
             spent_usd=spent_usd,
             spent_symbol=spent_symbol,
@@ -442,7 +442,7 @@ class BuyWatcher:
 
         msg_text_channel = build_buy_message_channel(
             token_symbol=token_name,
-            emoji=token_cfg.get("emoji") or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>',
+            emoji="✅",
             spent_sol=effective_spent_sol,
             spent_usd=spent_usd,
             spent_symbol=spent_symbol,
@@ -464,7 +464,7 @@ class BuyWatcher:
             min_buy = max(float(settings.MIN_BUY_DEFAULT_SOL), float(r["min_buy_sol"] or 0), float(token_cfg.get("min_buy") or 0))
             if effective_spent_sol is None or effective_spent_sol < min_buy:
                 continue
-            emoji = token_cfg.get("emoji") or r["emoji"] or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>'
+            emoji = token_cfg.get("emoji") or r["emoji"] or "🟢"
             tg = tg_url or r["telegram_link"] or None
             media = token_cfg.get("media_file_id") or r["media_file_id"]
             media_kind = token_cfg.get("media_kind") or "photo"
@@ -476,7 +476,7 @@ class BuyWatcher:
             if ctype == "channel":
                 msg_text2 = build_buy_message_channel(
                     token_symbol=token_name,
-                    emoji=token_cfg.get("emoji") or r["emoji"] or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>',
+                    emoji="✅",
                     spent_sol=effective_spent_sol,
                     spent_usd=spent_usd,
                     spent_symbol=spent_symbol,
