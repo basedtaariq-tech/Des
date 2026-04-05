@@ -104,8 +104,7 @@ def _build(token_symbol, emoji, spent_sol, spent_usd, got_tokens, buyer, tx_url,
     lines.append(f'{premium_text_or_plain("listing", "🤍")} {_a("Listing", settings.LISTING_URL)} | {premium_text_or_plain("chart", "📈")} {_a("Chart", chart_url or tx_url)}')
     lines.append("")
     lines.append(_ad_line(ad_text, ad_link))
-    return "
-".join(lines)
+    return "\n".join(lines)
 
 
 def build_buy_message_group(**kwargs) -> str:
@@ -146,5 +145,4 @@ def build_leaderboard_message(rows: list[tuple[int, str, str, float, str | None]
     if len(visible_rows) == 0:
         lines.append("No trending tokens yet")
 
-    return "
-".join(lines)
+    return "\n".join(lines)
