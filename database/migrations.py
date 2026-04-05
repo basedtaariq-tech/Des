@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS token_settings (
   buy_step INTEGER NOT NULL DEFAULT 1,
   min_buy REAL NOT NULL DEFAULT 0,
   custom_link TEXT,
-  emoji TEXT NOT NULL DEFAULT '🟢',
+  emoji TEXT NOT NULL DEFAULT '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>',
   media_file_id TEXT,
   media_kind TEXT NOT NULL DEFAULT 'photo',
   show_media INTEGER NOT NULL DEFAULT 1,
