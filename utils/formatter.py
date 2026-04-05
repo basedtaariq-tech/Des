@@ -1,18 +1,20 @@
 from __future__ import annotations
 from bot.config import settings
 from typing import Optional
+from html import escape
 
 RANK_EMOJIS = {1: "1️⃣", 2: "2️⃣", 3: "3️⃣", 4: "4️⃣", 5: "5️⃣", 6: "6️⃣", 7: "7️⃣", 8: "8️⃣", 9: "9️⃣", 10: "🔟"}
 
 PREMIUM_EMOJIS = {
-    "spent": '<tg-emoji emoji-id="5377620962390857342">💲</tg-emoji>',
+    "spent": '<tg-emoji emoji-id="5409048419211682843">💲</tg-emoji>',
     "got": '<tg-emoji emoji-id="5262577510293457429">↔️</tg-emoji>',
     "wallet": '<tg-emoji emoji-id="5260547274957672345">🫂</tg-emoji>',
     "price": '<tg-emoji emoji-id="5224257782013769471">🗝️</tg-emoji>',
     "mcap": '<tg-emoji emoji-id="5451882707875276247">📈</tg-emoji>',
     "chart": '<tg-emoji emoji-id="5417971815064561628">🛡️</tg-emoji>',
-    "listing": '<tg-emoji emoji-id="5424912684078348533">🔥</tg-emoji>',
+    "listing": '<tg-emoji emoji-id="5427168083074628963">🔥</tg-emoji>',
     "buy": '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>',
+    "moon": '<tg-emoji emoji-id="5258332798409783582">🌙</tg-emoji>',
 }
 
 
@@ -77,10 +79,12 @@ def _norm_url(url: Optional[str]) -> Optional[str]:
 
 
 def _a(label: str, url: Optional[str]) -> str:
+    safe_label = escape(str(label or ""))
     u = _norm_url(url)
     if not u:
-        return label
-    return f'<a href="{u}">{label}</a>'
+        return safe_label
+    safe_url = escape(u, quote=True)
+    return f'<a href="{safe_url}">{safe_label}</a>'
 
 
 def _default_ad_line() -> str:
@@ -96,7 +100,7 @@ def _ad_line(ad_text: str | None, ad_link: str | None = None) -> str:
 
 
 def _build(token_symbol, emoji, spent_sol, spent_usd, got_tokens, buyer, tx_url, price_usd, mcap_usd, tg_url, ad_text, ad_link, chart_url=None, spent_symbol="SOL", spent_value=None):
-    title = f'🪐 {_a(token_symbol, tg_url)} Buy!'
+    title = f'{premium_text_or_plain("moon", "🪐")} {_a(token_symbol, tg_url)} Buy!'
     count = max(3, min(12, int(spent_sol * 4) or 3))
     display_value = spent_value if spent_value is not None else spent_sol
     usd_part = f" (${fmt_num(spent_usd, 2)})" if spent_usd > 0 else ""
@@ -128,7 +132,8 @@ def build_leaderboard_message(rows: list[tuple[int, str, str, float, str | None]
     for idx, row in enumerate(rows[:10], start=1):
         rank, label, metric, pct, chart_url = row
         sign = "+" if pct > 0 else ""
-        token_part = _a(label, chart_url or settings.LISTING_URL)
+        clean_label = (label or 'TOKEN').strip()[:32]
+        token_part = _a(clean_label, chart_url or settings.LISTING_URL)
         metric_part = _a(metric, chart_url or settings.LISTING_URL)
         lines.append(f'{RANK_EMOJIS.get(rank, str(rank))} {token_part} | {metric_part} | {sign}{pct:.0f}%')
         if idx == 3:
