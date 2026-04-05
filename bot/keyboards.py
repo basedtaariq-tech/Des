@@ -6,6 +6,19 @@ from bot.config import settings
 BUY_TEMPLATE = "https://t.me/ThorSolana_bot?start=r-TBw15MO-buy-{mint}"
 
 
+def _display_emoji_value(value: str | None) -> str:
+    raw = (value or '').strip()
+    if not raw:
+        return '🟢'
+    if '<tg-emoji' in raw:
+        import re
+        m = re.search(r'<tg-emoji[^>]*>(.*?)</tg-emoji>', raw)
+        if m and m.group(1).strip():
+            return m.group(1).strip()
+        return '✨'
+    return raw[:8]
+
+
 def buy_kb(mint: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text="Metrics", url=BUY_TEMPLATE.format(mint=mint))
@@ -58,7 +71,7 @@ def token_edit_page_kb(mint: str, page: int, values: dict | None = None) -> Inli
         ("ℹ️ Buy Step", "buy_step", f"✏️ ({values.get('buy_step', 1)})"),
         ("ℹ️ Min Buy", "min_buy", f"✏️ ({values.get('min_buy', 0)})"),
         ("ℹ️ Link", "link", "✏️ (set)" if values.get('telegram_link') else "✏️ ()"),
-        ("ℹ️ Emoji", "emoji", f"✏️ ({values.get('emoji', '🟢')})"),
+        ("ℹ️ Emoji", "emoji", f"✏️ ({_display_emoji_value(values.get('emoji', '🟢'))})"),
         ("ℹ️ Media", "media", "✏️ (📸)" if values.get('media_file_id') else "✏️ ()"),
     ]
     for left, key, right in rows:

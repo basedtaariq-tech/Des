@@ -106,6 +106,30 @@ def _norm_tg(v: str | None) -> str | None:
         return f"https://{t[7:]}"
     return t
 
+
+def _extract_custom_emoji_html(msg: Message) -> str | None:
+    entities = list(getattr(msg, 'entities', None) or [])
+    text = msg.text or ''
+    for ent in entities:
+        if getattr(ent, 'type', None) == 'custom_emoji' and getattr(ent, 'custom_emoji_id', None):
+            try:
+                value = text[ent.offset: ent.offset + ent.length] or '✨'
+            except Exception:
+                value = '✨'
+            return f'<tg-emoji emoji-id="{ent.custom_emoji_id}">{value}</tg-emoji>'
+    raw = (msg.text or '').strip()
+    if '<tg-emoji' in raw and 'emoji-id=' in raw:
+        return raw
+    return None
+
+
+def _normalize_emoji_input(msg: Message) -> str:
+    premium = _extract_custom_emoji_html(msg)
+    if premium:
+        return premium
+    raw = (msg.text or '🟢').strip() or '🟢'
+    return raw[:16]
+
 async def _tokens(db: DB) -> list[tuple[str, str]]:
     conn = await db.connect()
     cur = await conn.execute("SELECT mint, COALESCE(symbol, name, mint) AS label FROM tracked_tokens ORDER BY created_at DESC LIMIT 50")
@@ -157,7 +181,7 @@ async def _render_edit_page(db: DB, mint: str) -> tuple[str, dict]:
     values = {
         "buy_step": ts["buy_step"] if ts else 1,
         "min_buy": float(ts["min_buy"] or 0) if ts else 0.0,
-        "emoji": ts["emoji"] if ts and ts["emoji"] else '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>',
+        "emoji": ts["emoji"] if ts and ts["emoji"] else "🟢",
         "media_file_id": ts["media_file_id"] if ts else None,
         "media_kind": ts["media_kind"] if ts else "photo",
         "telegram_link": tr["telegram_link"] if tr else None,
@@ -448,7 +472,7 @@ async def edit_token_value(msg: Message, state: FSMContext, db: DB):
     elif key == "min_buy":
         await conn.execute("UPDATE token_settings SET min_buy=? WHERE mint=?", (max(0.0, float((msg.text or '0').strip())), mint))
     elif key == "emoji":
-        await conn.execute("UPDATE token_settings SET emoji=? WHERE mint=?", ((((msg.text or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>').strip()) or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>')[:128], mint))
+        await conn.execute("UPDATE token_settings SET emoji=? WHERE mint=?", (_normalize_emoji_input(msg), mint))
     elif key == "media":
         txt = (msg.text or '').strip().lower()
         if txt == 'skip':
