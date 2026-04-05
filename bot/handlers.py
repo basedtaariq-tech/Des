@@ -157,7 +157,7 @@ async def _render_edit_page(db: DB, mint: str) -> tuple[str, dict]:
     values = {
         "buy_step": ts["buy_step"] if ts else 1,
         "min_buy": float(ts["min_buy"] or 0) if ts else 0.0,
-        "emoji": ts["emoji"] if ts and ts["emoji"] else "🟢",
+        "emoji": ts["emoji"] if ts and ts["emoji"] else '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>',
         "media_file_id": ts["media_file_id"] if ts else None,
         "media_kind": ts["media_kind"] if ts else "photo",
         "telegram_link": tr["telegram_link"] if tr else None,
@@ -448,7 +448,7 @@ async def edit_token_value(msg: Message, state: FSMContext, db: DB):
     elif key == "min_buy":
         await conn.execute("UPDATE token_settings SET min_buy=? WHERE mint=?", (max(0.0, float((msg.text or '0').strip())), mint))
     elif key == "emoji":
-        await conn.execute("UPDATE token_settings SET emoji=? WHERE mint=?", ((((msg.text or '🟢').strip()) or '🟢')[:8], mint))
+        await conn.execute("UPDATE token_settings SET emoji=? WHERE mint=?", ((((msg.text or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>').strip()) or '<tg-emoji emoji-id="5352784961814405440">🐸</tg-emoji>')[:128], mint))
     elif key == "media":
         txt = (msg.text or '').strip().lower()
         if txt == 'skip':
